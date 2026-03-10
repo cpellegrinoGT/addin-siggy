@@ -72,26 +72,33 @@ geotab.addin.siggy = function () {
     });
   }
 
+  /** Build the params object for GetAceResults calls. */
+  function aceParams(functionName, functionParameters) {
+    return {
+      serviceName: "dna-planet-orchestration",
+      functionName: functionName,
+      customerData: true,
+      environment: "prod",
+      functionParameters: functionParameters || {}
+    };
+  }
+
   /** Create a new Ace chat session. */
   function createChat() {
-    return apiCall("GetAceResults", {
-      functionName: "create-chat",
-      params: {}
-    }).then(function (result) {
-      console.log("[Siggy] create-chat result:", JSON.stringify(result));
-      return result.chat_id || result.chatId || (result.data && result.data.chat_id);
-    });
+    return apiCall("GetAceResults", aceParams("create-chat", {}))
+      .then(function (result) {
+        console.log("[Siggy] create-chat result:", JSON.stringify(result));
+        return result.chat_id || result.chatId || (result.data && result.data.chat_id);
+      });
   }
 
   /** Send a prompt to Ace. Returns the message_group_id for polling. */
   function sendPrompt(chatIdVal, prompt) {
-    return apiCall("GetAceResults", {
-      functionName: "send-prompt",
-      params: {
-        chat_id: chatIdVal,
-        prompt: prompt
-      }
-    }).then(function (result) {
+    return apiCall("GetAceResults", aceParams("send-prompt", {
+      chat_id: chatIdVal,
+      prompt: prompt,
+      human_in_the_loop: true
+    })).then(function (result) {
       console.log("[Siggy] send-prompt result:", JSON.stringify(result));
       return result.message_group_id || result.messageGroupId ||
         (result.data && result.data.message_group_id);
@@ -111,13 +118,10 @@ geotab.addin.siggy = function () {
         }
 
         pollCount++;
-        apiCall("GetAceResults", {
-          functionName: "get-message-group",
-          params: {
-            chat_id: chatIdVal,
-            message_group_id: msgGroupId
-          }
-        }).then(function (result) {
+        apiCall("GetAceResults", aceParams("get-message-group", {
+          chat_id: chatIdVal,
+          message_group_id: msgGroupId
+        })).then(function (result) {
           console.log("[Siggy] get-message-group poll #" + pollCount + ":", JSON.stringify(result).substring(0, 500));
 
           var data = result.data || result;
