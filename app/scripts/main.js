@@ -172,10 +172,10 @@ geotab.addin.siggy = function () {
         }).then(function (result) {
           console.log("[Siggy] get-message-group poll #" + pollCount + ":", JSON.stringify(result).substring(0, 500));
 
-          var data = result.data || result;
+          // Response is { message_group: { status: {...}, messages: {...} } }
+          var mg = result.message_group || result.data || result;
 
-          // Status can be nested: { status: { status: "DONE" } } or flat string
-          var statusObj = data.status || {};
+          var statusObj = mg.status || {};
           var status;
           if (typeof statusObj === "object") {
             status = statusObj.status || "";
@@ -186,8 +186,8 @@ geotab.addin.siggy = function () {
           console.log("[Siggy] parsed status:", status);
 
           if (status === "DONE" || status === "COMPLETE" || status === "COMPLETED") {
-            // Messages may be an object keyed by ID or an array
-            var messages = data.messages || {};
+            // Messages is an object keyed by ID
+            var messages = mg.messages || {};
             var responseText = "";
 
             if (Array.isArray(messages)) {
@@ -209,12 +209,12 @@ geotab.addin.siggy = function () {
 
             // Fallback
             if (!responseText) {
-              responseText = data.reasoning || data.content || data.text || "No response received.";
+              responseText = mg.reasoning || mg.content || mg.text || "No response received.";
             }
             console.log("[Siggy] response text:", responseText.substring(0, 200));
             resolve(responseText);
           } else if (status === "ERROR" || status === "FAILED") {
-            reject(new Error(statusObj.message || data.message || "Ace returned an error."));
+            reject(new Error(statusObj.message || mg.message || "Ace returned an error."));
           } else {
             // Still processing — poll again
             setTimeout(poll, POLL_INTERVAL_MS);
