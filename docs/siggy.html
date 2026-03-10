@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Siggy</title>
+  <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+  <div id="siggy-root">
+
+    <!-- Header -->
+    <div id="siggy-header">
+      <div id="siggy-header-left">
+        <div id="siggy-avatar">S</div>
+        <div id="siggy-header-text">
+          <span id="siggy-title">Siggy</span>
+          <span id="siggy-subtitle">Fleet Intelligence Advisor</span>
+        </div>
+      </div>
+      <button id="siggy-new-chat" title="New Chat">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 20h9"/>
+          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Messages area -->
+    <div id="siggy-messages">
+
+      <!-- Welcome message -->
+      <div id="siggy-welcome">
+        <div id="siggy-welcome-avatar">S</div>
+        <h2>Hi, I'm Siggy</h2>
+        <p>Your fleet intelligence advisor. Ask me anything about your fleet — safety trends, compliance, optimization, or how to get the most out of MyGeotab.</p>
+      </div>
+
+      <!-- Quick-action chips -->
+      <div id="siggy-chips">
+        <button class="siggy-chip" data-prompt="What are my fleet's top safety risks right now?">Top safety risks</button>
+        <button class="siggy-chip" data-prompt="How can I improve fuel efficiency across my fleet?">Fuel efficiency tips</button>
+        <button class="siggy-chip" data-prompt="Give me a compliance checklist for DVIR and HOS.">Compliance checklist</button>
+        <button class="siggy-chip" data-prompt="What EV transition insights do you have for my fleet?">EV transition insights</button>
+      </div>
+
+    </div>
+
+    <!-- Typing indicator (hidden by default) -->
+    <div id="siggy-typing" style="display: none;">
+      <div class="siggy-msg siggy-msg-assistant">
+        <div class="siggy-typing-dots">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input area -->
+    <div id="siggy-input-area">
+      <textarea id="siggy-input" placeholder="Ask Siggy about your fleet..." rows="1"></textarea>
+      <button id="siggy-send" title="Send" disabled>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"/>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+        </svg>
+      </button>
+    </div>
+
+  </div>
+
+  <script src="scripts/main.js"></script>
+</body>
+</html>

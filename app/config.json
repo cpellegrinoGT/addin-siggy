@@ -1,0 +1,16 @@
+{
+  "name": "Siggy",
+  "supportEmail": "support@example.com",
+  "version": "1.0",
+  "items": [
+    {
+      "url": "https://cpellegrinoGT.github.io/addin-siggy/siggy.html",
+      "path": "ActivityLink/",
+      "menuName": {
+        "en": "Siggy"
+      },
+      "svgIcon": "https://cpellegrinoGT.github.io/addin-siggy/images/icon.svg"
+    }
+  ],
+  "files": {}
+}

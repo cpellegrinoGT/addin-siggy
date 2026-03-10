@@ -1,0 +1,308 @@
+/* ── Siggy Chat UI ─────────────────────────────────────────────────── */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: #0f1117;
+  color: #e1e1e6;
+  height: 100vh;
+  overflow: hidden;
+}
+
+#siggy-root {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* ── Header ────────────────────────────────────────────────────────── */
+
+#siggy-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-bottom: 1px solid #1e2030;
+  background: #161822;
+  flex-shrink: 0;
+}
+
+#siggy-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+#siggy-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00c9a7, #00a386);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+  color: #fff;
+}
+
+#siggy-header-text {
+  display: flex;
+  flex-direction: column;
+}
+
+#siggy-title {
+  font-weight: 600;
+  font-size: 16px;
+  color: #fff;
+}
+
+#siggy-subtitle {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+#siggy-new-chat {
+  background: none;
+  border: 1px solid #2a2d3e;
+  border-radius: 8px;
+  color: #9ca3af;
+  padding: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+#siggy-new-chat:hover {
+  background: #1e2030;
+  color: #00c9a7;
+  border-color: #00c9a7;
+}
+
+/* ── Messages ──────────────────────────────────────────────────────── */
+
+#siggy-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+#siggy-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+#siggy-messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#siggy-messages::-webkit-scrollbar-thumb {
+  background: #2a2d3e;
+  border-radius: 3px;
+}
+
+/* ── Welcome ───────────────────────────────────────────────────────── */
+
+#siggy-welcome {
+  text-align: center;
+  padding: 40px 20px 20px;
+}
+
+#siggy-welcome-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00c9a7, #00a386);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 28px;
+  color: #fff;
+  margin: 0 auto 16px;
+}
+
+#siggy-welcome h2 {
+  font-size: 22px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+#siggy-welcome p {
+  font-size: 14px;
+  color: #9ca3af;
+  max-width: 460px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
+/* ── Quick-Action Chips ────────────────────────────────────────────── */
+
+#siggy-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 20px 20px;
+}
+
+.siggy-chip {
+  background: #1e2030;
+  border: 1px solid #2a2d3e;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 13px;
+  color: #d1d5db;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.siggy-chip:hover {
+  background: #252838;
+  border-color: #00c9a7;
+  color: #00c9a7;
+}
+
+/* ── Message Bubbles ───────────────────────────────────────────────── */
+
+.siggy-msg {
+  max-width: 80%;
+  padding: 12px 16px;
+  border-radius: 16px;
+  font-size: 14px;
+  line-height: 1.6;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+.siggy-msg-user {
+  align-self: flex-end;
+  background: linear-gradient(135deg, #00c9a7, #00a386);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+.siggy-msg-assistant {
+  align-self: flex-start;
+  background: #1e2030;
+  color: #e1e1e6;
+  border-bottom-left-radius: 4px;
+}
+
+.siggy-msg-error {
+  align-self: flex-start;
+  background: #2d1b1b;
+  color: #f87171;
+  border: 1px solid #7f1d1d;
+  border-bottom-left-radius: 4px;
+}
+
+/* ── Typing Indicator ──────────────────────────────────────────────── */
+
+#siggy-typing {
+  padding: 0 20px 8px;
+}
+
+.siggy-typing-dots {
+  display: flex;
+  gap: 4px;
+  padding: 4px 0;
+}
+
+.siggy-typing-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4b5563;
+  animation: siggy-bounce 1.4s ease-in-out infinite;
+}
+
+.siggy-typing-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.siggy-typing-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes siggy-bounce {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  30% {
+    transform: translateY(-6px);
+    opacity: 1;
+  }
+}
+
+/* ── Input Area ────────────────────────────────────────────────────── */
+
+#siggy-input-area {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 12px 20px 20px;
+  border-top: 1px solid #1e2030;
+  background: #161822;
+  flex-shrink: 0;
+}
+
+#siggy-input {
+  flex: 1;
+  background: #1e2030;
+  border: 1px solid #2a2d3e;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #e1e1e6;
+  resize: none;
+  outline: none;
+  font-family: inherit;
+  line-height: 1.4;
+  max-height: 120px;
+  overflow-y: auto;
+  transition: border-color 0.15s;
+}
+
+#siggy-input::placeholder {
+  color: #6b7280;
+}
+
+#siggy-input:focus {
+  border-color: #00c9a7;
+}
+
+#siggy-send {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  border: none;
+  background: #00c9a7;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+
+#siggy-send:disabled {
+  background: #2a2d3e;
+  color: #4b5563;
+  cursor: not-allowed;
+}
+
+#siggy-send:not(:disabled):hover {
+  background: #00a386;
+}
