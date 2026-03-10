@@ -101,12 +101,25 @@ geotab.addin.siggy = function () {
         })
           .then(function (r) { return r.json(); })
           .then(function (json) {
-            console.log("[Siggy] aceCall result:", JSON.stringify(json).substring(0, 500));
+            console.log("[Siggy] aceCall raw:", JSON.stringify(json).substring(0, 500));
             if (json.error) {
               reject(new Error(json.error.message || JSON.stringify(json.error)));
-            } else {
-              resolve(json.result);
+              return;
             }
+            // Unwrap: json.result -> apiResult.results[0]
+            var outer = json.result || {};
+            var apiResult = outer.apiResult || outer;
+            // Check for API-level errors
+            var apiErrors = (apiResult.errors && apiResult.errors.length > 0) ? apiResult.errors : null;
+            if (!apiErrors) apiErrors = (outer.errors && outer.errors.length > 0) ? outer.errors : null;
+            if (apiErrors) {
+              reject(new Error(apiErrors[0].message || JSON.stringify(apiErrors[0])));
+              return;
+            }
+            var results = apiResult.results || [];
+            var unwrapped = results[0] || apiResult;
+            console.log("[Siggy] aceCall unwrapped:", JSON.stringify(unwrapped).substring(0, 500));
+            resolve(unwrapped);
           })
           .catch(reject);
       });
@@ -117,21 +130,25 @@ geotab.addin.siggy = function () {
   function createChat() {
     return aceCall("create-chat", {})
       .then(function (result) {
-        console.log("[Siggy] create-chat result:", JSON.stringify(result));
-        return result.chat_id || result.chatId || (result.data && result.data.chat_id);
+        console.log("[Siggy] create-chat:", JSON.stringify(result));
+        var id = result.chat_id || result.chatId;
+        console.log("[Siggy] chat_id:", id);
+        return id;
       });
   }
 
   /** Send a prompt to Ace. Returns the message_group_id for polling. */
   function sendPrompt(chatIdVal, prompt) {
+    console.log("[Siggy] sendPrompt chat_id:", chatIdVal);
     return aceCall("send-prompt", {
       chat_id: chatIdVal,
       prompt: prompt,
       human_in_the_loop: true
     }).then(function (result) {
-      console.log("[Siggy] send-prompt result:", JSON.stringify(result));
-      return result.message_group_id || result.messageGroupId ||
-        (result.data && result.data.message_group_id);
+      console.log("[Siggy] send-prompt:", JSON.stringify(result));
+      var mgId = result.message_group_id || result.messageGroupId;
+      console.log("[Siggy] message_group_id:", mgId);
+      return mgId;
     });
   }
 
