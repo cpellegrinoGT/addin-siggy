@@ -115,26 +115,35 @@ geotab.addin.siggy = function () {
           }
         }).then(function (result) {
           var data = result.data || result;
-          var status = data.status || data.state;
 
-          if (status === "complete" || status === "completed") {
-            // Extract response text
-            var messages = data.messages || data.message_group || [];
-            var assistantMsg = "";
-            for (var i = 0; i < messages.length; i++) {
-              var msg = messages[i];
-              if (msg.role === "assistant" || msg.sender === "assistant") {
-                assistantMsg = msg.content || msg.text || msg.message || "";
-                break;
-              }
+          // Status is nested: { status: { status: "DONE", code: 0 } }
+          var statusObj = data.status || {};
+          var status = (typeof statusObj === "object" ? statusObj.status : statusObj) || "";
+          status = status.toUpperCase();
+
+          if (status === "DONE" || status === "COMPLETE" || status === "COMPLETED") {
+            // Messages is an object keyed by message ID, not an array
+            var messages = data.messages || {};
+            var responseText = "";
+
+            // Iterate over message object values
+            var msgKeys = Object.keys(messages);
+            for (var i = 0; i < msgKeys.length; i++) {
+              var msg = messages[msgKeys[i]];
+              // Skip the user's own prompt
+              if (msg.type === "UserPrompt") continue;
+              // The response is in the "reasoning" field (content is often null)
+              responseText = msg.reasoning || msg.content || msg.text || msg.message || "";
+              if (responseText) break;
             }
-            // Fallback: if no structured messages, try top-level content
-            if (!assistantMsg) {
-              assistantMsg = data.content || data.text || data.response || JSON.stringify(data);
+
+            // Fallback
+            if (!responseText) {
+              responseText = data.reasoning || data.content || data.text || "No response received.";
             }
-            resolve(assistantMsg);
-          } else if (status === "error" || status === "failed") {
-            reject(new Error(data.error || data.message || "Ace returned an error."));
+            resolve(responseText);
+          } else if (status === "ERROR" || status === "FAILED") {
+            reject(new Error(statusObj.message || data.message || "Ace returned an error."));
           } else {
             // Still processing — poll again
             setTimeout(poll, POLL_INTERVAL_MS);
