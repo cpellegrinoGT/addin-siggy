@@ -392,13 +392,10 @@ geotab.addin.siggy = function () {
     // Show typing indicator
     showTyping(true);
 
-    // Build the augmented prompt
-    var augmentedPrompt = buildPrompt(text);
-
-    // Send to Ace
+    // Send to Ace (raw text — Ace has a 500 char prompt limit)
     ensureChatId()
       .then(function (cid) {
-        return sendPrompt(cid, augmentedPrompt);
+        return sendPrompt(cid, text);
       })
       .then(function (msgGroupId) {
         return pollForResponse(chatId, msgGroupId);
