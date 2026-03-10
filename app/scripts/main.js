@@ -72,20 +72,50 @@ geotab.addin.siggy = function () {
     });
   }
 
-  /** Build the params object for GetAceResults calls. */
-  function aceParams(functionName, functionParameters) {
-    return {
-      serviceName: "dna-planet-orchestration",
-      functionName: functionName,
-      customerData: true,
-      environment: "prod",
-      functionParameters: functionParameters || {}
-    };
+  /** Call GetAceResults via direct fetch to /apiv1 (bypasses api.call). */
+  function aceCall(functionName, functionParameters) {
+    return new Promise(function (resolve, reject) {
+      api.getSession(function (session) {
+        var server = session.server || "my.geotab.com";
+        var url = "https://" + server + "/apiv1";
+        var body = {
+          method: "GetAceResults",
+          params: {
+            credentials: {
+              database: session.database,
+              userName: session.userName,
+              sessionId: session.sessionId
+            },
+            serviceName: "dna-planet-orchestration",
+            functionName: functionName,
+            customerData: true,
+            environment: "prod",
+            functionParameters: functionParameters || {}
+          }
+        };
+        console.log("[Siggy] aceCall ->", url, JSON.stringify(body).substring(0, 300));
+        fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
+        })
+          .then(function (r) { return r.json(); })
+          .then(function (json) {
+            console.log("[Siggy] aceCall result:", JSON.stringify(json).substring(0, 500));
+            if (json.error) {
+              reject(new Error(json.error.message || JSON.stringify(json.error)));
+            } else {
+              resolve(json.result);
+            }
+          })
+          .catch(reject);
+      });
+    });
   }
 
   /** Create a new Ace chat session. */
   function createChat() {
-    return apiCall("GetAceResults", aceParams("create-chat", {}))
+    return aceCall("create-chat", {})
       .then(function (result) {
         console.log("[Siggy] create-chat result:", JSON.stringify(result));
         return result.chat_id || result.chatId || (result.data && result.data.chat_id);
@@ -94,11 +124,11 @@ geotab.addin.siggy = function () {
 
   /** Send a prompt to Ace. Returns the message_group_id for polling. */
   function sendPrompt(chatIdVal, prompt) {
-    return apiCall("GetAceResults", aceParams("send-prompt", {
+    return aceCall("send-prompt", {
       chat_id: chatIdVal,
       prompt: prompt,
       human_in_the_loop: true
-    })).then(function (result) {
+    }).then(function (result) {
       console.log("[Siggy] send-prompt result:", JSON.stringify(result));
       return result.message_group_id || result.messageGroupId ||
         (result.data && result.data.message_group_id);
@@ -118,10 +148,10 @@ geotab.addin.siggy = function () {
         }
 
         pollCount++;
-        apiCall("GetAceResults", aceParams("get-message-group", {
+        aceCall("get-message-group", {
           chat_id: chatIdVal,
           message_group_id: msgGroupId
-        })).then(function (result) {
+        }).then(function (result) {
           console.log("[Siggy] get-message-group poll #" + pollCount + ":", JSON.stringify(result).substring(0, 500));
 
           var data = result.data || result;
