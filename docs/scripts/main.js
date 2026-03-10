@@ -146,7 +146,8 @@ geotab.addin.siggy = function () {
       human_in_the_loop: true
     }).then(function (result) {
       console.log("[Siggy] send-prompt:", JSON.stringify(result));
-      var mgId = result.message_group_id || result.messageGroupId;
+      var mg = result.message_group || {};
+      var mgId = mg.id || result.message_group_id || result.messageGroupId;
       console.log("[Siggy] message_group_id:", mgId);
       return mgId;
     });
