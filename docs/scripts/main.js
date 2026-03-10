@@ -78,6 +78,7 @@ geotab.addin.siggy = function () {
       functionName: "create-chat",
       params: {}
     }).then(function (result) {
+      console.log("[Siggy] create-chat result:", JSON.stringify(result));
       return result.chat_id || result.chatId || (result.data && result.data.chat_id);
     });
   }
@@ -91,6 +92,7 @@ geotab.addin.siggy = function () {
         prompt: prompt
       }
     }).then(function (result) {
+      console.log("[Siggy] send-prompt result:", JSON.stringify(result));
       return result.message_group_id || result.messageGroupId ||
         (result.data && result.data.message_group_id);
     });
@@ -99,6 +101,7 @@ geotab.addin.siggy = function () {
   /** Poll get-message-group until response is complete. */
   function pollForResponse(chatIdVal, msgGroupId) {
     var startTime = Date.now();
+    var pollCount = 0;
 
     return new Promise(function (resolve, reject) {
       function poll() {
@@ -107,6 +110,7 @@ geotab.addin.siggy = function () {
           return;
         }
 
+        pollCount++;
         apiCall("GetAceResults", {
           functionName: "get-message-group",
           params: {
@@ -114,33 +118,48 @@ geotab.addin.siggy = function () {
             message_group_id: msgGroupId
           }
         }).then(function (result) {
+          console.log("[Siggy] get-message-group poll #" + pollCount + ":", JSON.stringify(result).substring(0, 500));
+
           var data = result.data || result;
 
-          // Status is nested: { status: { status: "DONE", code: 0 } }
+          // Status can be nested: { status: { status: "DONE" } } or flat string
           var statusObj = data.status || {};
-          var status = (typeof statusObj === "object" ? statusObj.status : statusObj) || "";
+          var status;
+          if (typeof statusObj === "object") {
+            status = statusObj.status || "";
+          } else {
+            status = String(statusObj);
+          }
           status = status.toUpperCase();
+          console.log("[Siggy] parsed status:", status);
 
           if (status === "DONE" || status === "COMPLETE" || status === "COMPLETED") {
-            // Messages is an object keyed by message ID, not an array
+            // Messages may be an object keyed by ID or an array
             var messages = data.messages || {};
             var responseText = "";
 
-            // Iterate over message object values
-            var msgKeys = Object.keys(messages);
-            for (var i = 0; i < msgKeys.length; i++) {
-              var msg = messages[msgKeys[i]];
-              // Skip the user's own prompt
-              if (msg.type === "UserPrompt") continue;
-              // The response is in the "reasoning" field (content is often null)
-              responseText = msg.reasoning || msg.content || msg.text || msg.message || "";
-              if (responseText) break;
+            if (Array.isArray(messages)) {
+              for (var j = 0; j < messages.length; j++) {
+                var m = messages[j];
+                if (m.type === "UserPrompt" || m.role === "user") continue;
+                responseText = m.reasoning || m.content || m.text || m.message || "";
+                if (responseText) break;
+              }
+            } else {
+              var msgKeys = Object.keys(messages);
+              for (var i = 0; i < msgKeys.length; i++) {
+                var msg = messages[msgKeys[i]];
+                if (msg.type === "UserPrompt" || msg.role === "user") continue;
+                responseText = msg.reasoning || msg.content || msg.text || msg.message || "";
+                if (responseText) break;
+              }
             }
 
             // Fallback
             if (!responseText) {
               responseText = data.reasoning || data.content || data.text || "No response received.";
             }
+            console.log("[Siggy] response text:", responseText.substring(0, 200));
             resolve(responseText);
           } else if (status === "ERROR" || status === "FAILED") {
             reject(new Error(statusObj.message || data.message || "Ace returned an error."));
@@ -149,6 +168,7 @@ geotab.addin.siggy = function () {
             setTimeout(poll, POLL_INTERVAL_MS);
           }
         }).catch(function (err) {
+          console.error("[Siggy] poll error:", err);
           reject(err);
         });
       }
